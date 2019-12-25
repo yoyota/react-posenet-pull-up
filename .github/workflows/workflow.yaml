@@ -1,0 +1,34 @@
+name: github pages
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+        env:
+          CI: true
+  build-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run build
+      - run: echo "pullup.yoyota.dev" > ./build/CNAME
+      - name: deploy
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./build
