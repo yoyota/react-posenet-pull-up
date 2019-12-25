@@ -1,25 +1,26 @@
-import React from "react"
-import logo from "./logo.svg"
-import "./App.css"
+import React, { useCallback } from "react"
+import "@babel/polyfill"
+import PoseNet from "react-posenet"
+import usePullUpCounter from "./usePullUpCounter"
+
+const inferenceConfig = {
+  decodingMethod: "single-person"
+}
 
 function App() {
+  const [count, checkPoses] = usePullUpCounter()
+  const onEstimate = useCallback(poses => checkPoses(poses), [checkPoses])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h1>{`Pull up count: ${count}`}</h1>
+      <PoseNet
+        className="min-vh-100"
+        facingMode="environment"
+        inferenceConfig={inferenceConfig}
+        onEstimate={onEstimate}
+      />
+    </>
   )
 }
 
