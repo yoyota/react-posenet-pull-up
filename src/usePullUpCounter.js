@@ -1,12 +1,10 @@
 import { useRef, useReducer, useCallback } from "react"
 
 function getKeypointsObject(pose) {
-  return pose.keypoints
-    .filter(({ score }) => score > 0.7)
-    .reduce((acc, { part, position }) => {
-      acc[part] = position
-      return acc
-    }, {})
+  return pose.keypoints.reduce((acc, { part, position }) => {
+    acc[part] = position
+    return acc
+  }, {})
 }
 
 function reducer(count, action) {
@@ -20,9 +18,6 @@ export default function(sensitivity = 10) {
   const checkPoses = useCallback(
     poses => {
       if (poses.length !== 1) return
-      const [pose] = poses
-      if (pose.score < 0.5) return
-      const keypointsObject = getKeypointsObject(pose)
 
       const {
         leftShoulder,
@@ -31,7 +26,7 @@ export default function(sensitivity = 10) {
         rightElbow,
         leftWrist,
         rightWrist
-      } = keypointsObject
+      } = getKeypointsObject(poses[0])
 
       const shoulder = leftShoulder || rightShoulder
       const elbow = leftElbow || rightElbow
@@ -47,6 +42,7 @@ export default function(sensitivity = 10) {
       if (up) {
         dispatch("increment")
         standardRef.current = 0
+        return
       }
 
       const wrist = leftWrist || rightWrist
