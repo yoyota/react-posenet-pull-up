@@ -1,12 +1,10 @@
 import { useRef, useReducer, useCallback } from "react"
 
 function getKeypointsObject(pose) {
-  return pose.keypoints
-    .filter(({ score }) => score > 0.7)
-    .reduce((acc, { part, position }) => {
-      acc[part] = position
-      return acc
-    }, {})
+  return pose.keypoints.reduce((acc, { part, position }) => {
+    acc[part] = position
+    return acc
+  }, {})
 }
 
 function reducer(count, action) {
@@ -14,15 +12,12 @@ function reducer(count, action) {
   return count + 1
 }
 
-export default function(sensitivity = 10) {
+export default function(sensitivity = 5) {
   const [count, dispatch] = useReducer(reducer, 0)
-  const standardRef = useRef(0)
+  const standard = useRef(0)
   const checkPoses = useCallback(
     poses => {
       if (poses.length !== 1) return
-      const [pose] = poses
-      if (pose.score < 0.5) return
-      const keypointsObject = getKeypointsObject(pose)
 
       const {
         leftShoulder,
@@ -30,31 +25,33 @@ export default function(sensitivity = 10) {
         leftElbow,
         rightElbow,
         leftWrist,
-        rightWrist
-      } = keypointsObject
+        rightWrist,
+        leftHip,
+        rightHip
+      } = getKeypointsObject(poses[0])
 
-      const shoulder = leftShoulder || rightShoulder
       const elbow = leftElbow || rightElbow
-      if (!shoulder || !elbow) return
+      const shoulder = leftShoulder || rightShoulder
+      if (!elbow || !shoulder) return
 
       const down = shoulder.y > elbow.y
       if (down) {
-        standardRef.current = Math.max(standardRef.current, elbow.y)
+        standard.current = Math.max(standard.current, elbow.y)
         return
       }
 
-      const up = standardRef.current > elbow.y + sensitivity
+      const up = standard.current > elbow.y + sensitivity
       if (up) {
         dispatch("increment")
-        standardRef.current = 0
+        standard.current = 0
+        return
       }
 
+      const hip = leftHip || rightHip
       const wrist = leftWrist || rightWrist
-      if (!wrist) return
-      const rest = wrist.y > elbow.y
-      if (rest) {
-        dispatch("reset")
-      }
+      if (!hip || !wrist) return
+      const rest = wrist.y + sensitivity > hip.y
+      if (rest) dispatch("reset")
     },
     [sensitivity]
   )
