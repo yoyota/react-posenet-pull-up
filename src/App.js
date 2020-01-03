@@ -1,5 +1,5 @@
+import "regenerator-runtime/runtime"
 import React, { useCallback } from "react"
-import "@babel/polyfill"
 import PoseNet from "react-posenet"
 import usePullUpCounter from "./usePullUpCounter"
 
