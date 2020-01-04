@@ -12,7 +12,7 @@ function reducer(count, action) {
   return count + 1
 }
 
-export default function(sensitivity = 5) {
+export default function(sensitivity = 10) {
   const [count, dispatch] = useReducer(reducer, 0)
   const standard = useRef(0)
   const checkPoses = useCallback(
